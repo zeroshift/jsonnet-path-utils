@@ -26,7 +26,7 @@
   withArrayItemByMatchMixin(matcher, arr, override)::
     $.withArrayItemByMatch(matcher, arr, override, mixin=true),
 
-  withArrayItemAtIndex(targetIndex, arr, override, mixin=false)::
+  withArrayItemByIndex(targetIndex, arr, override, mixin=false)::
     std.mapWithIndex(
       function(index, item)
         if index == targetIndex
@@ -38,21 +38,34 @@
       arr
     ),
 
-  withArrayItemAtIndexMixin(targetIndex, arr, override)::
-    $.withArrayItemAtIndex(targetIndex, arr, override, mixin=true),
+  withArrayItemByIndexMixin(targetIndex, arr, override)::
+    $.withArrayItemByIndex(targetIndex, arr, override, mixin=true),
 
-  withArrayItemAtPath(path, override, arrayIndex=0, mixin=false, depth=0)::
+  withArrayItemByMatchAtPath(path, override, matcher, mixin=false, depth=0)::
     local pathArray = std.split(path, '.');
     local key = pathArray[depth];
     if depth < std.length(pathArray) - 1
-    then { [key]+: $.withArrayItemAtPath(path, override, arrayIndex, mixin, (depth + 1)) }
+    then { [key]+: $.withArrayItemByMatchAtPath(path, override, matcher, mixin, (depth + 1)) }
     else
       if mixin == true
-      then { [key]: $.withArrayItemAtIndexMixin(arrayIndex, super[key], override) }
-      else { [key]: $.withArrayItemAtIndex(arrayIndex, super[key], override) },
+      then { [key]: $.withArrayItemByMatchMixin(matcher, super[key], override) }
+      else { [key]: $.withArrayItemByMatch(matcher, super[key], override) },
 
-  withArrayItemAtPathMixin(path, override, arrayIndex=0)::
-    $.withArrayItemAtPath(path, override, arrayIndex, mixin=true, depth=0),
+  withArrayItemByMatchAtPathMixin(path, override, matcher)::
+    $.withArrayItemByMatchAtPath(path, override, matcher, mixin=true, depth=0),
+
+  withArrayItemByIndexAtPath(path, override, arrayIndex=0, mixin=false, depth=0)::
+    local pathArray = std.split(path, '.');
+    local key = pathArray[depth];
+    if depth < std.length(pathArray) - 1
+    then { [key]+: $.withArrayItemByIndexAtPath(path, override, arrayIndex, mixin, (depth + 1)) }
+    else
+      if mixin == true
+      then { [key]: $.withArrayItemByIndexMixin(arrayIndex, super[key], override) }
+      else { [key]: $.withArrayItemByIndex(arrayIndex, super[key], override) },
+
+  withArrayItemByIndexAtPathMixin(path, override, arrayIndex=0)::
+    $.withArrayItemByIndexAtPath(path, override, arrayIndex, mixin=true, depth=0),
 
   withObjectAtPath(path, override, mixin=false, depth=0)::
     local pathArray = std.split(path, '.');

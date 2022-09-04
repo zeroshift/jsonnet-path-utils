@@ -9,48 +9,62 @@
       )
     )[0],
 
-  overrideArrayAtIndex(targetIndex, arr, override)::
-    std.mapWithIndex(
-      function(index, item)
-        if index == targetIndex
-        then override
+  withArrayItemByMatch(matcher, arr, override, mixin=false)::
+    std.map(
+      function(item)
+        local key = std.objectFields(matcher)[0];
+        local val = std.objectValues(matcher)[0];
+        if std.objectHas(item, key) && std.get(item, key, default=null, inc_hidden=true) == val
+        then
+          if mixin == true
+          then item + override
+          else override
         else item,
       arr
     ),
 
-  mixinArrayAtIndex(targetIndex, arr, override)::
+  withArrayItemByMatchMixin(matcher, arr, override)::
+    $.withArrayItemByMatch(matcher, arr, override, mixin=true),
+
+  withArrayItemAtIndex(targetIndex, arr, override, mixin=false)::
     std.mapWithIndex(
       function(index, item)
         if index == targetIndex
-        then item + override
+        then
+          if mixin == true
+          then item + override
+          else override
         else item,
       arr
     ),
 
-  overrideArrayAtPath(path, override, arrayIndex=0, mixin=false, depth=0)::
+  withArrayItemAtIndexMixin(targetIndex, arr, override)::
+    $.withArrayItemAtIndex(targetIndex, arr, override, mixin=true),
+
+  withArrayItemAtPath(path, override, arrayIndex=0, mixin=false, depth=0)::
     local pathArray = std.split(path, '.');
     local key = pathArray[depth];
     if depth < std.length(pathArray) - 1
-    then { [key]+: $.overrideArrayAtPath(path, override, arrayIndex, mixin, (depth + 1)) }
+    then { [key]+: $.withArrayItemAtPath(path, override, arrayIndex, mixin, (depth + 1)) }
     else
       if mixin == true
-      then { [key]: $.mixinArrayAtIndex(arrayIndex, super[key], override) }
-      else { [key]: $.overrideArrayAtIndex(arrayIndex, super[key], override) },
+      then { [key]: $.withArrayItemAtIndexMixin(arrayIndex, super[key], override) }
+      else { [key]: $.withArrayItemAtIndex(arrayIndex, super[key], override) },
 
-  mixinArrayAtPath(path, override, arrayIndex=0)::
-    $.overrideArrayAtPath(path, override, arrayIndex, mixin=true, depth=0),
+  withArrayItemAtPathMixin(path, override, arrayIndex=0)::
+    $.withArrayItemAtPath(path, override, arrayIndex, mixin=true, depth=0),
 
-  overridePath(path, override, mixin=false, depth=0)::
+  withObjectAtPath(path, override, mixin=false, depth=0)::
     local pathArray = std.split(path, '.');
     local key = pathArray[depth];
     if depth < std.length(pathArray) - 1
-    then { [key]+: $.overridePath(path, override, mixin=mixin, depth=(depth + 1)) }
+    then { [key]+: $.withObjectAtPath(path, override, mixin=mixin, depth=(depth + 1)) }
     else
       if mixin == true
       then { [key]+: override }
       else { [key]: override },
 
-  mixinPath(path, override)::
-    $.overridePath(path, override, mixin=true, depth=0),
+  withObjectAtPathMixin(path, override)::
+    $.withObjectAtPath(path, override, mixin=true, depth=0),
 
 }

@@ -9,6 +9,18 @@
       )
     )[0],
 
+  withArrayItemAll(arr, override, mixin=false)::
+    std.map(
+      function(item)
+        if mixin == true
+        then item + override
+        else override,
+      arr
+    ),
+
+  withArrayItemAllMixin(arr, override)::
+    $.withArrayItemAll(arr, override, mixin=true),
+
   withArrayItemByMatch(matcher, arr, override, mixin=false)::
     std.map(
       function(item)
@@ -40,6 +52,19 @@
 
   withArrayItemByIndexMixin(targetIndex, arr, override)::
     $.withArrayItemByIndex(targetIndex, arr, override, mixin=true),
+
+  withArrayItemAllAtPath(path, override, mixin=false, depth=0)::
+    local pathArray = std.split(path, '.');
+    local key = pathArray[depth];
+    if depth < std.length(pathArray) - 1
+    then { [key]+: $.withArrayItemAllAtPath(path, override, mixin, (depth + 1)) }
+    else
+      if mixin == true
+      then { [key]: $.withArrayItemAllMixin(super[key], override) }
+      else { [key]: $.withArrayItemAll(super[key], override) },
+
+  withArrayItemAllAtPathMixin(path, override)::
+    $.withArrayItemAllAtPath(path, override, mixin=true, depth=0),
 
   withArrayItemByMatchAtPath(path, override, matcher, mixin=false, depth=0)::
     local pathArray = std.split(path, '.');

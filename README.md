@@ -26,85 +26,97 @@ local u = import 'util.libsonnet';
   },
 }
 // Override key4
-+ u.withObjectAtPath('key1.key2.key3.key4', { test: 'valOverride' })
++ u.withValueAtPath('key1.key2.key3.key4', { test: 'valOverride' })
 
 // Mixin data to key4
-+ u.withObjectAtPathMixin('key1.key2.key3.key4', { testMixin: 'valMixin' })
++ u.withValueAtPathMixin('key1.key2.key3.key4', { testMixin: 'valMixin' })
 ```
 
 Renders as:
 
-```json
-{
-   "key1": {
-      "key2": {
-         "key3": {
-            "key4": {
-               "test": "valOverride",
-               "testMixin": "valMixin"
-            }
-         }
-      }
-   },
-   "anotherKey": {
-      "subkey": "value"
-   },
-}
+```yaml
+anotherKey:
+  subkey: value
+key1:
+  key2:
+    key3:
+      key4:
+        test: valOverride
+        testMixin: valMixin
 ```
 
 ## Working with Arrays
 
 ```js
-local u = import 'util.libsonnet';
+llocal u = import 'utils/main.libsonnet';
 // We have an array nested  in an object
 {
   topkey1: {
     arr1: [
       { key1: {} },
-      { key2: { subkey1: 'val' } },
+      { key1: { subKey1: 'val' } },
     ],
   },
-} +
-// Mixin an object into an array at a specific index
-u.withArrayItemByIndexAtPathMixin(
+}
+
+// Mixin new object to array items that contain all key/value pairs
++ u.withArrayItemAtPathMixin(
   'topkey1.arr1',
-  u.withObjectAtPathMixin('mixinSubkey1.mixinSubkey2', 'mixinByIndex'),
-  arrayIndex=0
+  { key2: 'valueByMatcher' },
+  matcher={ key1: {} },
 )
-// Override an object at a specific index
-+ u.withArrayItemByIndexAtPath(
+
+// Mixin new object to specific array item at index 0
++ u.withArrayItemAtPathMixin(
   'topkey1.arr1',
-  {overrideSubkey1: {overrideSubkey2: 'override'}}, // This can just be ab object as well
-  arrayIndex=1
+  { key1: 'newValueByIndex' },
+  matcher=0,
 )
-// Mixin an object into an array by selecting items that match a certain {key: value} pair.
-+ u.withArrayItemByMatchAtPathMixin(
+
+// Mixin object to all items of an array
++ u.withArrayItemAtPathMixin(
   'topkey1.arr1',
-  u.withObjectAtPath('key1', 'mixinByMatch'),
-  matcher={ key1: {} }
+  { allKey+: 'allValue' },
+  matcher='*',
 )
+
+// Chaining calls
++ u.withArrayItemAtPathMixin(
+  'topkey1.arr1',
+  u.withValueAtPathMixin(
+    'key2.newArray',
+    [
+      u.withValueAtPath('key1', {subKey1: 'val'})
+    ],
+  ),
+  matcher=1,
+)
+
+// The following ith throw an error
+
+// + u.withArrayItemAtPathMixin(
+//   'topkey1.arr1',
+//   { allKey+: 'allValue' },
+//   matcher='err',
+// )
+
 ```
 
 Renders as:
 
-```json
-{
-   "topkey1": {
-      "arr1": [
-         {
-            "key1": "mixinByMatch",
-            "mixinSubkey1": {
-               "mixinSubkey2": "mixinByIndex"
-            }
-         },
-         {
-            "overrideSubkey1": {
-               "overrideSubkey2": "override"
-            }
-         }
-      ]
-   }
-}
+```yaml
+topkey1:
+  arr1:
+    - allKey: allValue
+      key1: newValueByIndex
+      key2: valueByMatcher
+    - allKey: allValue
+      key1:
+        subKey1: val
+      key2:
+        newArray:
+          - key1:
+              subKey1: val
 ```
 
 ## Known issues
@@ -118,7 +130,7 @@ Renders as:
   This means that you need to have the key you want to override as part of your override object. For instance if I wanted to replace what's in key2, I would need to specify:
 
   ```js
-  + u.withObjectAtPath(
+  + u.withValueAtPath(
     'key1',
     { key2: { test: 'value' } }
   )

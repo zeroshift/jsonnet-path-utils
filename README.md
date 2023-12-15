@@ -48,7 +48,7 @@ key1:
 ## Working with Arrays
 
 ```js
-llocal u = import 'utils/main.libsonnet';
+local u = import 'utils/main.libsonnet';
 // We have an array nested  in an object
 {
   topkey1: {

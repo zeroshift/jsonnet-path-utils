@@ -57,6 +57,11 @@ local u = import 'utils/main.libsonnet';
       { key1: { subKey1: 'val' } },
     ],
   },
+  topkey2: {
+    'subKey.hasDot': [
+      { key1: {} },
+    ],
+  },
 }
 
 // Mixin new object to array items that contain all key/value pairs
@@ -86,10 +91,17 @@ local u = import 'utils/main.libsonnet';
   u.withValueAtPathMixin(
     'key2.newArray',
     [
-      u.withValueAtPath('key1', {subKey1: 'val'})
+      u.withValueAtPath('key1', { subKey1: 'val' }),
     ],
   ),
   matcher=1,
+)
+
+// Mixin with array path
++ u.withArrayItemAtPathMixin(
+  ['topkey2', 'subKey.hasDot'],
+  { key1: 'newValueByIndex' },
+  matcher=0,
 )
 
 // The following ith throw an error
@@ -99,7 +111,6 @@ local u = import 'utils/main.libsonnet';
 //   { allKey+: 'allValue' },
 //   matcher='err',
 // )
-
 ```
 
 Renders as:
@@ -117,6 +128,9 @@ topkey1:
         newArray:
           - key1:
               subKey1: val
+topkey2:
+  subKey.hasDot:
+    - key1: newValueByIndex
 ```
 
 ## Known issues

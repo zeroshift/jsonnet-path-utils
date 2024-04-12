@@ -13,43 +13,85 @@ local pathHelper = function(path)
     error 'Path should be either a string or array!';
 
 {
-  _withArrayItem(arr, override, matcher, mixin=false)::
+  matchers:: {
+
+    // NOTE: Change these back to returning a true/false value but still send in mixin to assert if it's possible
+
+    allItems()::
+      local fn =
+        function(index, item, override, mixin) true;
+      fn,
+
+    stringItem(matcher)::
+      assert std.isString(matcher) : 'matcher must be a string!';
+      local fn =
+        function(index, item, override, mixin)
+          assert mixin == false : 'mixin is not supported for stringItem!';
+          if std.isString(item) && item == matcher then
+            true
+          else
+            false;
+      fn,
+
+    itemAtIndex(matcher)::
+      assert std.isNumber(matcher) : 'matcher must be a number!';
+      local fn =
+        function(index, item, override, mixin)
+          if index == matcher then
+            true
+          else
+            false;
+      fn,
+
+    objectKeyInItem(matcher)::
+      assert std.isString(matcher) : 'matcher must be a string!';
+      local fn =
+        function(index, item, override, mixin)
+          if std.isObject(item) && std.objectHas(item, matcher) then
+            true
+          else
+            false;
+      fn,
+
+    objectKeyValueInItem(matcher)::
+      assert (std.isObject(matcher) && std.length(matcher) == 1) : 'matcher must be an object with a single key-value pair!';
+      local fn = function(index, item, override, mixin)
+        local key = std.objectFields(matcher)[0];
+        local val = std.objectValues(matcher)[0];
+        if std.isObject(item) && std.objectHas(item, key) && std.get(item, key, default=null, inc_hidden=true) == val then
+          true
+        else
+          false;
+      fn,
+
+  },
+
+  _withArrayItem(arr, override, matcherFn, mixin=false)::
     std.mapWithIndex(
       function(index, item)
-        if matcher == '*' then
+        assert std.isFunction(matcherFn) : 'matcherFn must be a function!';
+        if matcherFn(index, item, override, mixin) then
           overrideValue(item, override, mixin)
-        else if std.isNumber(matcher) then
-          if index == matcher then
-            overrideValue(item, override, mixin)
-          else
-            item
-        else if std.isObject(matcher) then
-          local key = std.objectFields(matcher)[0];
-          local val = std.objectValues(matcher)[0];
-          if std.objectHas(item, key) && std.get(item, key, default=null, inc_hidden=true) == val then
-            overrideValue(item, override, mixin)
-          else
-            item
         else
-          error 'unkown matcher!',
+          item,
       arr
     ),
 
-  _withArrayItemMixin(arr, override, matcher)::
-    $._withArrayItem(arr, override, matcher, mixin=true),
+  _withArrayItemMixin(arr, override, matcherFn)::
+    $._withArrayItem(arr, override, matcherFn, mixin=true),
 
-  withArrayItemAtPath(path, override, matcher, mixin=false, depth=0)::
+  withArrayItemAtPath(path, override, matcherFn=$.matchers.objectKeyValueInItem, mixin=false, depth=0)::
     local pathArray = pathHelper(path);
     local key = pathArray[depth];
     if depth < std.length(pathArray) - 1 then
-      { [key]+: $.withArrayItemAtPath(path, override, matcher, mixin, (depth + 1)) }
+      { [key]+: $.withArrayItemAtPath(path, override, matcherFn, mixin, (depth + 1)) }
     else if mixin == true then
-      { [key]: $._withArrayItemMixin(super[key], override, matcher) }
+      { [key]: $._withArrayItemMixin(super[key], override, matcherFn) }
     else
-      { [key]: $._withArrayItem(super[key], override, matcher) },
+      { [key]: $._withArrayItem(super[key], override, matcherFn) },
 
-  withArrayItemAtPathMixin(path, override, matcher)::
-    $.withArrayItemAtPath(path, override, matcher, mixin=true, depth=0),
+  withArrayItemAtPathMixin(path, override, matcherFn=$.matchers.objectKeyValueInItem)::
+    $.withArrayItemAtPath(path, override, matcherFn, mixin=true, depth=0),
 
   withValueAtPath(path, override, mixin=false, depth=0)::
     local pathArray = pathHelper(path);

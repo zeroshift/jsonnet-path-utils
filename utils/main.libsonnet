@@ -1,9 +1,3 @@
-local overrideValue = function(item, override, mixin)
-  if mixin == true then
-    item + override
-  else
-    override;
-
 local pathHelper = function(path)
   if std.isString(path) then
     std.split(path, '.')
@@ -26,7 +20,7 @@ local pathHelper = function(path)
       assert std.isString(matcher) : 'matcher must be a string!';
       local fn =
         function(index, item, override, mixin)
-          assert mixin == false : 'mixin is not supported for stringItem!';
+          assert mixin == false : 'mixin is not supported for stringItem! Use withArrayItemAtPath instead.';
           if std.isString(item) && item == matcher then
             true
           else
@@ -66,7 +60,14 @@ local pathHelper = function(path)
 
   },
 
+  local overrideValue = function(item, override, mixin)
+    if mixin == true then
+      item + override
+    else
+      override,
+
   _withArrayItem(arr, override, matcherFn, mixin=false)::
+    assert std.isArray(arr) : 'Item must be an array!';
     std.mapWithIndex(
       function(index, item)
         assert std.isFunction(matcherFn) : 'matcherFn must be a function!';

@@ -68,9 +68,9 @@ local pathHelper = function(path)
 
   local overrideArrayItem = function(arr, matcherFn, override, mixin=false)
     assert std.isArray(arr) : 'Item must be an array!';
+    assert std.isFunction(matcherFn) : 'matcherFn must be a function!';
     std.mapWithIndex(
       function(index, item)
-        assert std.isFunction(matcherFn) : 'matcherFn must be a function!';
         if matcherFn(index, item, mixin) then
           overrideValue(item, override, mixin)
         else

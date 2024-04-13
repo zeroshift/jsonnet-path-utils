@@ -13,13 +13,13 @@ local pathHelper = function(path)
 
     allItems()::
       local fn =
-        function(index, item, override, mixin) true;
+        function(index, item, mixin) true;
       fn,
 
     stringItem(matcher)::
       assert std.isString(matcher) : 'matcher must be a string!';
       local fn =
-        function(index, item, override, mixin)
+        function(index, item, mixin)
           assert mixin == false : 'mixin is not supported for stringItem! Use withArrayItemAtPath instead.';
           if std.isString(item) && item == matcher then
             true
@@ -30,7 +30,7 @@ local pathHelper = function(path)
     itemAtIndex(matcher)::
       assert std.isNumber(matcher) : 'matcher must be a number!';
       local fn =
-        function(index, item, override, mixin)
+        function(index, item, mixin)
           if index == matcher then
             true
           else
@@ -40,7 +40,7 @@ local pathHelper = function(path)
     objectKeyInItem(matcher)::
       assert std.isString(matcher) : 'matcher must be a string!';
       local fn =
-        function(index, item, override, mixin)
+        function(index, item, mixin)
           if std.isObject(item) && std.objectHas(item, matcher) then
             true
           else
@@ -49,7 +49,7 @@ local pathHelper = function(path)
 
     objectKeyValueInItem(matcher)::
       assert (std.isObject(matcher) && std.length(matcher) == 1) : 'matcher must be an object with a single key-value pair!';
-      local fn = function(index, item, override, mixin)
+      local fn = function(index, item, mixin)
         local key = std.objectFields(matcher)[0];
         local val = std.objectValues(matcher)[0];
         if std.isObject(item) && std.objectHas(item, key) && std.get(item, key, default=null, inc_hidden=true) == val then

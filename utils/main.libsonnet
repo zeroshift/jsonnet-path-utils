@@ -66,30 +66,25 @@ local pathHelper = function(path)
     else
       override,
 
-  _withArrayItem(arr, matcherFn, override, mixin=false)::
+  local overrideArrayItem = function(arr, matcherFn, override, mixin=false)
     assert std.isArray(arr) : 'Item must be an array!';
     std.mapWithIndex(
       function(index, item)
         assert std.isFunction(matcherFn) : 'matcherFn must be a function!';
-        if matcherFn(index, item, override, mixin) then
+        if matcherFn(index, item, mixin) then
           overrideValue(item, override, mixin)
         else
           item,
       arr
     ),
 
-  _withArrayItemMixin(arr, matcherFn, override)::
-    $._withArrayItem(arr, matcherFn, override, mixin=true),
-
   withArrayItemAtPath(path, matcherFn, override, mixin=false, depth=0)::
     local pathArray = pathHelper(path);
     local key = pathArray[depth];
     if depth < std.length(pathArray) - 1 then
       { [key]+: $.withArrayItemAtPath(path, matcherFn, override, mixin, (depth + 1)) }
-    else if mixin == true then
-      { [key]: $._withArrayItemMixin(super[key], matcherFn, override) }
     else
-      { [key]: $._withArrayItem(super[key], matcherFn, override) },
+      { [key]: overrideArrayItem(super[key], matcherFn, override, mixin) },
 
   withArrayItemAtPathMixin(path, matcherFn, override)::
     $.withArrayItemAtPath(path, matcherFn, override, mixin=true, depth=0),

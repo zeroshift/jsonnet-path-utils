@@ -5,6 +5,8 @@ Jsonnet utils for overriding values at particular paths or array indexes.
 - [jsonnet-path-utils](#jsonnet-path-utils)
   - [Overriding and patching a path of only keys](#overriding-and-patching-a-path-of-only-keys)
   - [Working with Arrays](#working-with-arrays)
+  - [Advanced Usage](#advanced-usage)
+    - [Chaining calls for deep nested objects within multiple arrays](#chaining-calls-for-deep-nested-objects-within-multiple-arrays)
   - [Known issues](#known-issues)
 
 ## Overriding and patching a path of only keys
@@ -49,88 +51,165 @@ key1:
 
 ```js
 local u = import 'utils/main.libsonnet';
-// We have an array nested  in an object
+local m = u.matchers;
+
 {
-  topkey1: {
-    arr1: [
-      { key1: {} },
-      { key1: { subKey1: 'val' } },
+  topKey: {
+    array1: [
+      {
+        key1: 'value1',
+        key2: 'value2',
+      },
+      {
+        key1: 'value3',
+        key2: 'value4',
+      },
+      {
+        key1: 'value5',
+        key2: 'value6',
+      },
     ],
-  },
-  topkey2: {
-    'subKey.hasDot': [
-      { key1: {} },
+    array2: [
+      'string1',
+      'string2',
     ],
   },
 }
-
-// Mixin new object to array items that contain all key/value pairs
 + u.withArrayItemAtPathMixin(
-  'topkey1.arr1',
-  { key2: 'valueByMatcher' },
-  matcher={ key1: {} },
+  'topKey.array1',
+  m.objectKeyInItem('key1'),
+  { key1: 'newValue1' }
 )
-
-// Mixin new object to specific array item at index 0
 + u.withArrayItemAtPathMixin(
-  'topkey1.arr1',
-  { key1: 'newValueByIndex' },
-  matcher=0,
+  'topKey.array1',
+  m.objectKeyValueInItem({ key2: 'value4' }),
+  { key2: 'newValueOnlyByKVCombo' },
 )
-
-// Mixin object to all items of an array
 + u.withArrayItemAtPathMixin(
-  'topkey1.arr1',
-  { allKey+: 'allValue' },
-  matcher='*',
+  'topKey.array1',
+  m.itemAtIndex(2),
+  { key2: 'newValueOnlyAtIndex2' },
 )
-
-// Chaining calls
 + u.withArrayItemAtPathMixin(
-  'topkey1.arr1',
-  u.withValueAtPathMixin(
-    'key2.newArray',
-    [
-      u.withValueAtPath('key1', { subKey1: 'val' }),
-    ],
-  ),
-  matcher=1,
+  'topKey.array1',
+  m.allItems(),
+  { key3: 'newKeyValueInAllArrayItems' },
 )
-
-// Mixin with array path
++ {
+  // using the shorthand '.' syntax is not required for the full path, just for the key that contains the array
+  topKey+:
+    {} +
+    // Override a single string in an the array
+    // Must use withArrayItemAtPath with m.stringItem as mixin is not supported for strings
+    u.withArrayItemAtPath(
+      'array2',
+      m.stringItem('string2'),
+      'newString2',
+    ),
+}
 + u.withArrayItemAtPathMixin(
-  ['topkey2', 'subKey.hasDot'],
-  { key1: 'newValueByIndex' },
-  matcher=0,
-)
+  'topKey.array1',
+  m.objectKeyInItem('key3'),
+  { key4: super.key3 + '-copiedAndModified' },
+  )
 
-// The following ith throw an error
-
-// + u.withArrayItemAtPathMixin(
-//   'topkey1.arr1',
-//   { allKey+: 'allValue' },
-//   matcher='err',
-// )
 ```
 
 Renders as:
 
 ```yaml
-topkey1:
-  arr1:
-    - allKey: allValue
-      key1: newValueByIndex
-      key2: valueByMatcher
-    - allKey: allValue
-      key1:
-        subKey1: val
-      key2:
-        newArray:
-          - key1:
-              subKey1: val
-topkey2:
-  subKey.hasDot:
-    - key1: newValueByIndex
+topKey:
+  array1:
+    - key1: newValue1
+      key2: value2
+      key3: newKeyValueInAllArrayItems
+      key4: newKeyValueInAllArrayItems-copiedAndModified
+    - key1: newValue1
+      key2: newValueOnlyByKVCombo
+      key3: newKeyValueInAllArrayItems
+      key4: newKeyValueInAllArrayItems-copiedAndModified
+    - key1: newValue1
+      key2: newValueOnlyAtIndex2
+      key3: newKeyValueInAllArrayItems
+      key4: newKeyValueInAllArrayItems-copiedAndModified
+  array2:
+    - string1
+    - newString2
+```
+
+## Advanced Usage
+
+### Chaining calls for deep nested objects within multiple arrays
+
+```js
+local u = import 'utils/main.libsonnet';
+local m = u.matchers;
+
+{
+  level: 1,
+  key1: {
+    level: 2,
+    array1: [
+      {
+        level: 3,
+        array2: [],
+      },
+      {
+        level: 3,
+        array2: [
+          {
+            level: 4,
+            key: 'foo',
+          },
+          {
+            // duplicate to show behavior of some matchers
+            level: 4,
+            key: 'foo',
+          },
+          {
+            level: 4,
+            key: 'bar',
+          },
+        ],
+      },
+    ],
+  },
+}
+// Mixin to array at path key1.array1, item at index 1
+// We'll chain another function call as the override to continue to modify another array nested in the object
++ u.withArrayItemAtPathMixin(
+  // Set path to array1
+  path='key1.array1',  // This can also be specified as an array of strings if any keys contian dots
+  // select by array index 1
+  matcherFn=m.itemAtIndex(1),
+  // We want to "jump through" this array, so we chain another function call
+  // For the next array, we want to replace the object with exactly our override, so we use `withArrayItemAtPath` instead of `withArrayItemAtPathMixin`
+  override=u.withArrayItemAtPath(
+    // select the key array1
+    path='array2',
+    // use the objectKeyValueInItem matcher to select any array item object with key='foo'
+    matcherFn=m.objectKeyValueInItem({ key: 'foo' }),
+    // specify the object we want to override
+    override={ key: 'newVal' },
+  ),
+)
+```
+
+Evaluates to:
+
+```yaml
+key1:
+  array1:
+    - array2: []
+      level: 3
+    - array2:
+        - key: newVal
+        - key: newVal
+        - key: bar
+          level: 4
+      level: 3
+  level: 2
+level: 1
 ```
 
 ## Known issues

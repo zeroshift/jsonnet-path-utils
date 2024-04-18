@@ -1,0 +1,45 @@
+{
+   "prometheusAlerts": {
+      "groups": [
+         {
+            "name": "group1",
+            "rules": [
+               {
+                  "alert": "alert1",
+                  "annotations": {
+                     "runbook": "http://some/runbook"
+                  },
+                  "expr": "vector(1)",
+                  "labels": {
+                     "env": "prod",
+                     "severity": "info"
+                  }
+               },
+               {
+                  "alert": "alert2",
+                  "annotations": {
+                     "runbook": "http://some/runbook"
+                  },
+                  "expr": "vector(1)",
+                  "labels": {
+                     "env": "prod",
+                     "severity": "warning"
+                  }
+               }
+            ]
+         },
+         {
+            "name": "group2",
+            "rules": [
+               {
+                  "alert": "alert3",
+                  "expr": "vector(1)",
+                  "labels": {
+                     "env": "dev"
+                  }
+               }
+            ]
+         }
+      ]
+   }
+}

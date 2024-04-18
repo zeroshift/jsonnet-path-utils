@@ -1,0 +1,22 @@
+{
+   "array1": [
+      {
+         "key1": "newValue",
+         "key2": "value2",
+         "newKey": "newValue"
+      },
+      {
+         "key1": "newValue",
+         "key2": "value4",
+         "key3": "value5",
+         "newKey": "newValue"
+      }
+   ],
+   "array2": [
+      {
+         "key1": "value6",
+         "key2": "value7"
+      },
+      "objectRepacedWithNewValue"
+   ]
+}

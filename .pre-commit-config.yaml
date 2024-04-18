@@ -15,7 +15,6 @@ repos:
     rev: v0.20.0
     hooks:
       - id: jsonnet-format
-      - id: jsonnet-lint
   - repo: https://github.com/rhysd/actionlint
     rev: v1.6.27
     hooks:

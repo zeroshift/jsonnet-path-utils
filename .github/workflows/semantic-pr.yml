@@ -1,4 +1,4 @@
-name: Lint
+name: Semantic Pull Request
 
 on:
   pull_request_target:

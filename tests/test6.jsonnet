@@ -1,4 +1,4 @@
-local u = import '../utils/main.libsonnet';
+local u = import '../path-utils/main.libsonnet';
 
 {
   key1: {

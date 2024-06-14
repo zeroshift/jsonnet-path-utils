@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/zeroshift/jsonnet-path-utils/compare/v1.0.1...v2.0.0) (2024-06-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* change subdir to path-utils. ([#13](https://github.com/zeroshift/jsonnet-path-utils/issues/13))
+
+### Features
+
+* change subdir to path-utils. ([#13](https://github.com/zeroshift/jsonnet-path-utils/issues/13)) ([cf9f868](https://github.com/zeroshift/jsonnet-path-utils/commit/cf9f8688533fddb5ce423b74331c4c75454c8906))
+
 ## [1.0.1](https://github.com/zeroshift/jsonnet-path-utils/compare/v1.0.0...v1.0.1) (2024-06-14)
 
 

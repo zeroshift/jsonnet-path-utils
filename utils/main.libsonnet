@@ -1,3 +1,5 @@
+local d = import 'doc-util/main.libsonnet';
+
 local pathHelper = function(path)
   if std.isString(path) then
     std.split(path, '.')
@@ -7,15 +9,25 @@ local pathHelper = function(path)
     error 'Path should be either a string or array!';
 
 {
+  // package declaration
+  '#': d.pkg(
+    name='jsonnet-path-utils',
+    url='github.com/zeroshift/jsonnet-path-utils/utils/main.libsonet',
+    help='',
+  ),
+
+  '#matchers': d.obj('Matcher functions used to match items in an array or object. These functions are used in conjunction with withArrayItemAtPath and withValueAtPath to match items in an array or object.'),
   matchers:: {
 
     // NOTE: Change these back to returning a true/false value but still send in mixin to assert if it's possible
 
+    '#allItems': d.fn('A matcher function that matches all items in an array or object.'),
     allItems()::
       local fn =
         function(index, item, mixin) true;
       fn,
 
+    '#stringItem': d.fn('A matcher function that matches a string item in an array.', [d.arg('matcher', d.T.string)]),
     stringItem(matcher)::
       assert std.isString(matcher) : 'matcher must be a string!';
       local fn =
@@ -27,6 +39,7 @@ local pathHelper = function(path)
             false;
       fn,
 
+    '#itemAtIndex': d.fn('A matcher function that matches an item at a specific index.', [d.arg('matcher', d.T.number)]),
     itemAtIndex(matcher)::
       assert std.isNumber(matcher) : 'matcher must be a number!';
       local fn =
@@ -37,6 +50,7 @@ local pathHelper = function(path)
             false;
       fn,
 
+    '#objectKeyInItem': d.fn('A matcher function that matches an object that contains a specific key name.', [d.arg('matcher', d.T.string)]),
     objectKeyInItem(matcher)::
       assert std.isString(matcher) : 'matcher must be a string!';
       local fn =
@@ -47,6 +61,7 @@ local pathHelper = function(path)
             false;
       fn,
 
+    '#objectKeyValueInItem': d.fn('A matcher function that matches an object that contains a specific key:value pair.', [d.arg('matcher', d.T.object)]),
     objectKeyValueInItem(matcher)::
       assert (std.isObject(matcher) && std.length(matcher) == 1) : 'matcher must be an object with a single key-value pair!';
       local fn = function(index, item, mixin)
@@ -78,6 +93,7 @@ local pathHelper = function(path)
       arr
     ),
 
+  '#withArrayItemAtPath': d.fn('Function to replace an item inside an array based on the result of the provided matcher function.', [d.arg('path', d.T.string), d.arg('matcherFn', d.T.func), d.arg('override', d.T.any)]),
   withArrayItemAtPath(path, matcherFn, override, mixin=false, depth=0)::
     local pathArray = pathHelper(path);
     local key = pathArray[depth];
@@ -86,9 +102,11 @@ local pathHelper = function(path)
     else
       { [key]: overrideArrayItem(super[key], matcherFn, override, mixin) },
 
+  '#withArrayItemAtPathMixin': d.fn('Function to patch an item inside an array based on the result of the provided matcher function.', [d.arg('path', d.T.string), d.arg('matcherFn', d.T.func), d.arg('override', d.T.any)]),
   withArrayItemAtPathMixin(path, matcherFn, override)::
     $.withArrayItemAtPath(path, matcherFn, override, mixin=true, depth=0),
 
+  '#withValueAtPath': d.fn('Function to replace an item at the provided path.', [d.arg('path', d.T.string), d.arg('override', d.T.any)]),
   withValueAtPath(path, override, mixin=false, depth=0)::
     local pathArray = pathHelper(path);
     local key = pathArray[depth];
@@ -99,6 +117,7 @@ local pathHelper = function(path)
     else
       { [key]: override },
 
+  '#withValueAtPathMixin': d.fn('Function to patch an item at the provided path.', [d.arg('path', d.T.string), d.arg('override', d.T.any)]),
   withValueAtPathMixin(path, override)::
     $.withValueAtPath(path, override, mixin=true, depth=0),
 }

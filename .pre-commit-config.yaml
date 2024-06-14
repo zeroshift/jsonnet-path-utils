@@ -1,3 +1,4 @@
+exclude: ^vendor/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -10,6 +11,7 @@ repos:
       - id: check-yaml
       - id: detect-private-key
       - id: end-of-file-fixer
+        exclude: ^docs/
       - id: trailing-whitespace
   - repo: https://github.com/google/go-jsonnet
     rev: v0.20.0
@@ -19,3 +21,11 @@ repos:
     rev: v1.6.27
     hooks:
       - id: actionlint
+  - repo: local
+    hooks:
+      - id: docsonnet
+        name: docsonnet
+        language: system
+        entry: jsonnet -J vendor -S -c -m docs/ docs.jsonnet
+        pass_filenames: false
+        always_run: true

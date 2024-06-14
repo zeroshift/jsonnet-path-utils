@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/zeroshift/jsonnet-path-utils/compare/v1.0.0...v1.0.1) (2024-06-14)
+
+
+### Bug Fixes
+
+* bump amannn/action-semantic-pull-request from 5.4.0 to 5.5.2 ([#8](https://github.com/zeroshift/jsonnet-path-utils/issues/8)) ([2a46bbc](https://github.com/zeroshift/jsonnet-path-utils/commit/2a46bbccaaf43fee7234e1674a64fcaaf34b4b82))
+
 ## 1.0.0 (2024-04-13)
 
 

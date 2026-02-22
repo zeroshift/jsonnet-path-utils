@@ -1,0 +1,28 @@
+[tools]
+bazelisk   = "1.20.0"
+actionlint = "1.7.1"
+go-jsonnet = "0.20.0"
+
+[tasks.test]
+description = "Run all Bazel tests"
+run = "bazel test tests/..."
+
+[tasks.test-verbose]
+description = "Run all Bazel tests with verbose output"
+run = "bazel test tests/... --test_output=all"
+
+[tasks.build]
+description = "Build all Bazel targets"
+run = "bazel build //..."
+
+[tasks.clean]
+description = "Clean Bazel build outputs"
+run = "bazel clean"
+
+[tasks.clean-expunge]
+description = "Clean all Bazel outputs including repository cache"
+run = "bazel clean --expunge"
+
+[tasks.lint]
+description = "Run actionlint on GitHub Actions workflow files"
+run = "actionlint .github/workflows/*.yml"

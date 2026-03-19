@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/zeroshift/jsonnet-path-utils/compare/v2.0.0...v2.0.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* resolve Bazel doc-util import and update mise-action to v3 ([568f3df](https://github.com/zeroshift/jsonnet-path-utils/commit/568f3df3e02ca58bd42d76e7deb65a4a91a6e2dd))
+
 ## [2.0.0](https://github.com/zeroshift/jsonnet-path-utils/compare/v1.0.1...v2.0.0) (2024-06-14)
 
 
